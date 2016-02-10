@@ -25,3 +25,4 @@ SOFTWARE.
 __version__ = '0.1'
 __project_name__ = 'twtxt-cli'
 __project_link__ = 'https://github.com/myles/twtxtcli'
+__project_usage__ = 'a plain text microblogging client'

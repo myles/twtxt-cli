@@ -29,7 +29,8 @@ from clint.textui import puts, indent, colored, columns
 
 import humanize
 
-from . import __project_name__, __version__
+from . import (__project_name__, __project_link__, __project_usage__,
+               __version__)
 from .twtxt import TwTxt
 
 
@@ -81,7 +82,9 @@ def view(nick):
 
 
 def main():
-    parser = argparse.ArgumentParser(prog="{0} v{1}.".format(__project_name__,
+    parser = argparse.ArgumentParser(usage=__project_usage__,
+                                     description=__project_link__,
+                                     prog="{0} v{1}.".format(__project_name__,
                                                              __version__))
 
     subparsers = parser.add_subparsers()
