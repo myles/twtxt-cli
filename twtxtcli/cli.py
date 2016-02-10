@@ -33,15 +33,13 @@ WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 """
 
-import os
 import argparse
-import configparser
 
-from clint.textui import puts, indent, colored
+from clint.textui import puts, indent, colored, columns
 
 import humanize
 
-from . import __version__, __project_name__
+from . import __project_name__, __version__
 from .twtxt import TwTxt
 
 
@@ -55,8 +53,10 @@ def follow(nick, url):
 
 def following():
     sources = twtxt.following()
+
     for source in sources:
         puts(colored.blue(source.nick))
+
         with indent(2):
             puts(source.url)
 
@@ -68,54 +68,55 @@ def unfollow(nick):
 
 def timeline():
     timeline = twtxt.timeline()
-    
+
     for tweet in timeline:
-        puts("@{0} | {1}".format(colored.black(tweet['nick'], bold=True),
-                    colored.magenta(humanize.naturaldate(tweet['timestamp']))))
-
-        with indent(2):
-            puts(tweet['text'])
-
-        puts()
+        puts(columns(
+            [colored.black(tweet['nick'], bold=True), 10],
+            [colored.magenta(humanize.naturaldate(tweet['timestamp'])), 10],
+            [tweet['text'], 59]
+        ))
 
 
 def view(nick):
     source = twtxt.view(nick)
 
-    puts("@{0} - {1}".format(colored.black(source.nick, bold=True), source.url))
+    puts("@{0} - {1}".format(colored.black(source.nick, bold=True),
+                             source.url))
 
     for tweet in source.get_tweets():
-        with indent(2):
-            puts(colored.magenta(humanize.naturaldate(tweet['timestamp'])))
-
-        with indent(4):
-            puts(tweet['text'])
-
-        puts()
+        puts(columns(
+            [colored.magenta(humanize.naturaldate(tweet['timestamp'])), 10],
+            [tweet['text'], 69]
+        ))
 
 
 def main():
-    parser = argparse.ArgumentParser(prog=__project_name__)
+    parser = argparse.ArgumentParser(prog="{0} v{1}.".format(__project_name__,
+                                                             __version__))
 
     subparsers = parser.add_subparsers()
 
     parser_timeline = subparsers.add_parser('timeline',
-                                        help="retrieve your personal timeline")
+                                            help="retrieve your personal "
+                                                 " timeline")
     parser_timeline.set_defaults(which='timeline')
 
     parser_view = subparsers.add_parser('view',
-                                help="view the timeline of one of your sources")
+                                        help="view the timeline of one of "
+                                             "your sources")
     parser_view.set_defaults(which='view')
     parser_view.add_argument('nick', type=str)
 
     parser_follow = subparsers.add_parser('follow',
-                                    help="add a new source to your followings")
+                                          help="add a new source to your "
+                                               "followings")
     parser_follow.set_defaults(which='follow')
     parser_follow.add_argument('--nick', dest='follow_nick', required=True)
     parser_follow.add_argument('--url', dest='follow_url', required=True)
 
     parser_following = subparsers.add_parser('following',
-                            help="return the list of sources you are following")
+                                             help="return the list of sources "
+                                                  "you are following")
     parser_following.set_defaults(which='following')
 
     parser_unfollow = subparsers.add_parser('unfollow',

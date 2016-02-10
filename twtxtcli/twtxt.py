@@ -35,7 +35,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 import os
 import configparser
-from operator import itemgetter, attrgetter
+from operator import itemgetter
 
 import iso8601
 import requests
@@ -43,6 +43,7 @@ import requests
 from clint import resources
 
 resources.init('myles', 'twtxt')
+
 
 class TwTxt(object):
     def __init__(self):
@@ -136,4 +137,3 @@ class Source(object):
                 pass
 
         return sorted(tweets, key=itemgetter('timestamp'), reverse=reverse)
-
