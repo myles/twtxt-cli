@@ -57,8 +57,8 @@ def unfollow(nick):
     puts(colored.red('unfollowed {0}'.format(nick)))
 
 
-def timeline():
-    timeline = twtxt.timeline()
+def timeline(reverse):
+    timeline = twtxt.timeline(reverse=reverse)
 
     for tweet in timeline:
         puts(columns(
@@ -68,8 +68,8 @@ def timeline():
         ))
 
 
-def view(nick):
-    source = twtxt.view(nick)
+def view(nick, reverse):
+    source = twtxt.view(nick, reverse=reverse)
 
     puts("@{0} - {1}".format(colored.black(source.nick, bold=True),
                              source.url))
@@ -93,19 +93,27 @@ def main():
                                             help="retrieve your personal "
                                                  " timeline")
     parser_timeline.set_defaults(which='timeline')
+    parser_timeline.add_argument('-r', '--reverse',
+                                 dest='timeline_reverse', action='store_false',
+                                 help="view in decending order")
 
     parser_view = subparsers.add_parser('view',
                                         help="view the timeline of one of "
                                              "your sources")
     parser_view.set_defaults(which='view')
     parser_view.add_argument('nick', type=str)
+    parser_view.add_argument('-r', '--reverse', dest='view_reverse',
+                             action='store_false', help="view in decending "
+                                                        "order")
 
     parser_follow = subparsers.add_parser('follow',
                                           help="add a new source to your "
                                                "followings")
     parser_follow.set_defaults(which='follow')
-    parser_follow.add_argument('--nick', dest='follow_nick', required=True)
-    parser_follow.add_argument('--url', dest='follow_url', required=True)
+    parser_follow.add_argument('-n', '--nick', dest='follow_nick',
+                               required=True, type=str)
+    parser_follow.add_argument('-u', '--url', dest='follow_url',
+                               required=True, type=str)
 
     parser_following = subparsers.add_parser('following',
                                              help="return the list of sources "
@@ -120,7 +128,7 @@ def main():
     args = parser.parse_args()
 
     if args.which == 'timeline':
-        timeline()
+        timeline(args.timeline_reverse)
 
     if args.which == 'follow':
         follow(args.follow_nick, args.follow_url)
@@ -132,4 +140,4 @@ def main():
         unfollow(args.nick)
 
     if args.which == 'view':
-        view(args.nick)
+        view(args.nick, args.view_reverse)

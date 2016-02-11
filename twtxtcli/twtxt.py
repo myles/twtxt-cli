@@ -156,7 +156,7 @@ class Tweet(object):
         for url in raw_urls:
             r = requests.get(url, allow_redirects=True)
             urls.append({'old': url, 'new': r.url})
-        
+
         return urls
 
     def process_text(self):
