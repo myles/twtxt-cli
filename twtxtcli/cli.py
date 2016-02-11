@@ -62,9 +62,9 @@ def timeline():
 
     for tweet in timeline:
         puts(columns(
-            [colored.black(tweet['nick'], bold=True), 10],
-            [colored.magenta(humanize.naturaldate(tweet['timestamp'])), 10],
-            [tweet['text'], 59]
+            [colored.black(tweet.source.nick, bold=True), 10],
+            [colored.magenta(humanize.naturaldate(tweet.timestamp)), 10],
+            [tweet.text, 59]
         ))
 
 
@@ -76,8 +76,8 @@ def view(nick):
 
     for tweet in source.get_tweets():
         puts(columns(
-            [colored.magenta(humanize.naturaldate(tweet['timestamp'])), 10],
-            [tweet['text'], 69]
+            [colored.magenta(humanize.naturaldate(tweet.timestamp)), 10],
+            [tweet.text, 69]
         ))
 
 

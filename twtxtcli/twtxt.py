@@ -23,9 +23,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import re
 import os
 import configparser
-from operator import itemgetter
+from operator import attrgetter
 
 import iso8601
 import requests
@@ -33,6 +34,8 @@ import requests
 from clint import resources
 
 resources.init('myles', 'twtxt')
+
+__all__ = ['TwTxt', 'Source', 'Tweet']
 
 
 class TwTxt(object):
@@ -94,14 +97,19 @@ class TwTxt(object):
 
         tweets += self.me().get_tweets()
 
-        return sorted(tweets, key=itemgetter('timestamp'), reverse=reverse)
+        return sorted(tweets, key=attrgetter('timestamp'), reverse=reverse)
 
 
 class Source(object):
-    """a twtxt source"""
     def __init__(self, nick, url):
         self.nick = nick
         self.url = url
+
+    def __str__(self):
+        return self.nick
+
+    def __dict__(self):
+        return {'nick': self.nick, 'url': self.url}
 
     def get_tweets(self, reverse=True):
         if self.url.startswith('http'):
@@ -118,12 +126,35 @@ class Source(object):
         for line in twtxt_file.text.split('\n'):
             try:
                 time, text = line.split('\t')
-                tweets.append({
-                    'timestamp': iso8601.parse_date(time),
-                    'text': text,
-                    'nick': self.nick
-                })
+                tweets.append(Tweet(self, text, iso8601.parse_date(time)))
             except ValueError:
                 pass
 
-        return sorted(tweets, key=itemgetter('timestamp'), reverse=reverse)
+        return sorted(tweets, key=attrgetter('timestamp'), reverse=reverse)
+
+
+class Tweet(object):
+    def __init__(self, source, text, timestamp):
+        self.source = source
+        self.timestamp = timestamp
+        self.text = text
+
+    def __dict__(self):
+        return {
+            'source': self.source.__dict__,
+            'timestamp': self.timestamp,
+            'text': self.text
+        }
+
+    def urls(self):
+        url_regex = re.compile('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|'
+                               '[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+')
+        return url_regex.findall(self.text)
+
+    def text_truncate(self):
+        max_length = 137
+
+        if len(self.text) <= max_length:
+            return self.text
+        else:
+            return ' '.join(self.text[:max_length].split(' ')[0:-1]) + '...'
