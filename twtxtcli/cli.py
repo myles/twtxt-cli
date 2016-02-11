@@ -81,6 +81,12 @@ def view(nick, reverse):
         ))
 
 
+def info(nick):
+    info = twtxt.view(nick)
+
+    puts("@{0} - {1}".format(colored.black(info.nick, bold=True),
+                             info.url))
+
 def main():
     parser = argparse.ArgumentParser(usage=__project_usage__,
                                      description=__project_link__,
@@ -125,6 +131,11 @@ def main():
     parser_unfollow.set_defaults(which='unfollow')
     parser_unfollow.add_argument('nick', type=str)
 
+    parser_info = subparsers.add_parser('info',
+                                        help="get infomration about a source")
+    parser_info.set_defaults(which='info')
+    parser_info.add_argument('nick', type=str)
+
     args = parser.parse_args()
 
     if args.which == 'timeline':
@@ -141,3 +152,6 @@ def main():
 
     if args.which == 'view':
         view(args.nick, args.view_reverse)
+
+    if args.which == 'info':
+        info(args.nick)
