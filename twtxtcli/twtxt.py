@@ -149,10 +149,22 @@ class Tweet(object):
     def urls(self):
         url_regex = re.compile('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|'
                                '[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+')
-        return url_regex.findall(self.text)
+        raw_urls = url_regex.findall(self.text)
+
+        urls = []
+
+        for url in raw_urls:
+            r = requests.get(url, allow_redirects=True)
+            urls.append({'old': url, 'new': r.url})
+        
+        return urls
+
+    def process_text(self):
+        for url in self.urls():
+            self.text = self.text.replace(url['old'], url['new'])
 
     def text_truncate(self):
-        max_length = 137
+        max_length = 140
 
         if len(self.text) <= max_length:
             return self.text
