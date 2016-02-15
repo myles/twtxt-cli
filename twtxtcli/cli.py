@@ -61,6 +61,8 @@ def timeline(reverse):
     timeline = twtxt.timeline(reverse=reverse)
 
     for tweet in timeline:
+        tweet.process_text()
+
         puts(columns(
             [colored.black(tweet.source.nick, bold=True), 10],
             [colored.magenta(humanize.naturaldate(tweet.timestamp)), 10],

@@ -37,10 +37,18 @@ resources.init('myles', 'twtxt')
 
 __all__ = ['TwTxt', 'Source', 'Tweet']
 
+url_regex = re.compile('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|'
+                       '(?:%[0-9a-fA-F][0-9a-fA-F]))+')
+mention_regex = re.compile(r'@<(?:(?P<name>\S+?)\s+)?(?P<url>\S+?://.*?)>')
+short_mention_regex = re.compile(r'@(?P<name>\S+)')
+
 
 class TwTxt(object):
     def __init__(self):
-        self.config_path = os.path.join(resources.user.path, 'config')
+        if config_path:
+            self.config_path = config_path
+        else:
+            self.config_path = os.path.join(resources.user.path, 'config')
 
         raw_config = resources.user.read('config')
         self.config = configparser.ConfigParser()
@@ -147,11 +155,9 @@ class Tweet(object):
         }
 
     def urls(self):
-        url_regex = re.compile('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|'
-                               '[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+')
-        raw_urls = url_regex.findall(self.text)
-
         urls = []
+
+        raw_urls = url_regex.findall(self.text)
 
         for url in raw_urls:
             r = requests.get(url, allow_redirects=True)
@@ -159,7 +165,27 @@ class Tweet(object):
 
         return urls
 
+    def mentions(self):
+        mentions = []
+
+        mentions_raw = mention_regex.findall(self.text)
+
+        for nick, url in mentions_raw:
+            mentions.append((nick, url))
+
+        short_mentions_raw = short_mention_regex.findall(self.text)
+
+        for nick in short_mentions_raw:
+            mentions.append((nick, None))
+
+        return mentions
+
     def process_text(self):
+        for nick, url in self.mentions():
+            if url:
+                self.text = self.text.replace('@<{0} {1}>'.format(nick, url),
+                                              '@{0}'.format(nick))
+
         for url in self.urls():
             self.text = self.text.replace(url['old'], url['new'])
 
