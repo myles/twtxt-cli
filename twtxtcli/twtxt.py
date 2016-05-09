@@ -25,11 +25,13 @@ SOFTWARE.
 
 import re
 import os
+import datetime
 import configparser
 from operator import attrgetter
 
 import iso8601
 import requests
+from tzlocal import get_localzone
 
 from clint import resources
 
@@ -44,7 +46,7 @@ short_mention_regex = re.compile(r'@(?P<name>\S+)')
 
 
 class TwTxt(object):
-    def __init__(self):
+    def __init__(self, config_path=None):
         if config_path:
             self.config_path = config_path
         else:
@@ -106,6 +108,17 @@ class TwTxt(object):
         tweets += self.me().get_tweets()
 
         return sorted(tweets, key=attrgetter('timestamp'), reverse=reverse)
+
+    def tweet(self, tweet, timestamp=None):
+        if not timestamp:
+            tz = get_localzone()
+            timestamp = tz.localize(datetime.datetime.now())
+
+        twtxt_file_path = os.path.expanduser(self.config.get('twtxt',
+                                                             'twtfile'))
+
+        with open(twtxt_file_path, 'a') as f:
+            f.write("{0}\t{1}\n".format(timestamp.isoformat(), tweet))
 
 
 class Source(object):

@@ -89,6 +89,11 @@ def info(nick):
     puts("@{0} - {1}".format(colored.black(info.nick, bold=True),
                              info.url))
 
+
+def tweet(tweet):
+    twtxt.tweet(tweet)
+
+
 def main():
     parser = argparse.ArgumentParser(usage=__project_usage__,
                                      description=__project_link__,
@@ -138,6 +143,11 @@ def main():
     parser_info.set_defaults(which='info')
     parser_info.add_argument('nick', type=str)
 
+    parser_tweet = subparsers.add_parser('tweet',
+                                         help="tweet a status message")
+    parser_tweet.set_defaults(which='tweet')
+    parser_tweet.add_argument('tweet', type=str)
+
     args = parser.parse_args()
 
     if args.which == 'timeline':
@@ -157,3 +167,6 @@ def main():
 
     if args.which == 'info':
         info(args.nick)
+
+    if args.which == 'tweet':
+        tweet(args.tweet)
